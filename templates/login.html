@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Official Login - Road Safety Portal</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+      function initTheme() {
+          if (localStorage.getItem('theme') === 'dark') {
+              document.body.setAttribute('data-theme', 'dark');
+          }
+      }
+      initTheme();
+      function toggleTheme() {
+          if (document.body.getAttribute('data-theme') === 'dark') {
+              document.body.removeAttribute('data-theme');
+              localStorage.setItem('theme', 'light');
+          } else {
+              document.body.setAttribute('data-theme', 'dark');
+              localStorage.setItem('theme', 'dark');
+          }
+      }
+    </script>
+</head>
+<body>
+    <header class="gov-header">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='gov_logo copy.png') }}" alt="Gov Logo">
+            <h1>Dibrugarh Govt Portal</h1>
+        </div>
+        <nav>
+            <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+            <a href="/" class="btn" style="margin-left: 10px;">Home</a>
+            <a href="/signup" class="btn" style="margin-left: 10px;">Register</a>
+        </nav>
+    </header>
+
+    <div class="auth-form">
+        <div style="text-align: center;">
+            <img src="{{ url_for('static', filename='gov_logo copy.png') }}" alt="Gov Logo" width="80">
+        </div>
+        <h2>Official Login</h2>
+        <p style="text-align: center; font-size: 14px; opacity: 0.8; margin-bottom: 20px;">Police | Health Department | Admin Officers</p>
+
+        <form method="POST" action="/login">
+            <label for="email">Email ID</label>
+            <input type="email" name="email" id="email" placeholder="example@gov.in" required>
+
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" placeholder="Enter secure password" required>
+
+            <button type="submit" class="btn" style="margin-top: 20px; width: 100%;">Sign In</button>
+        </form>
+
+        <div style="text-align: right; margin-top: 15px;">
+            <a href="/forgot">Forgot Password?</a>
+        </div>
+        <div style="text-align: center; margin-top: 15px;">
+            Not registered? <a href="/signup">Create an account</a>
+        </div>
+
+        {% with messages = get_flashed_messages() %}
+          {% if messages %}
+            <div class="flash">
+                {% for message in messages %}
+                    <p>{{ message }}</p>
+                {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+    </div>
+
+    <footer>
+      <p>&copy; 2025 Government of Assam – Dibrugarh Transport Department. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Dibrugarh Road Safety Portal</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+  <script>
+    // Theme Manager
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+    }
+    initTheme(); // Run immediately to prevent flash
+
+    function toggleTheme() {
+        const currentTheme = document.body.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+            document.body.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+    }
+  </script>
+</head>
+
+<body class="homepage">
+  <header class="gov-header">
+    <div class="logo">
+      <img src="{{ url_for('static', filename='gov_logo copy.png') }}" alt="Govt Logo" />
+      <div>
+        <h1>Government of Assam</h1>
+        <p>District Road Safety Cell, Dibrugarh</p>
+      </div>
+    </div>
+    <nav>
+      <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i> Theme</button>
+      {% if not session.get('user') %}
+        <a href="/login" class="btn">Login</a>
+        <a href="/signup" class="btn">Sign Up</a>
+      {% else %}
+        <a href="/logout" class="btn">Logout</a>
+      {% endif %}
+    </nav>
+  </header>
+
+  <!-- Carousel -->
+  <div class="carousel">
+    <img src="{{ url_for('static', filename='banner1 copy.jpg') }}" class="active" alt="Banner 1" />
+    <img src="{{ url_for('static', filename='banner2 copy.jpg') }}" alt="Banner 2" />
+    <img src="{{ url_for('static', filename='banner3 copy.jpg') }}" alt="Banner 3" />
+  </div>
+
+  <!-- Hero and Info Section -->
+  <section class="hero">
+    <h2>About Dibrugarh District Road Safety</h2>
+    <p>
+      The Dibrugarh District Road Safety Cell operates under the Government of Assam to ensure safer roads, reduce accidents, and promote traffic discipline and emergency preparedness.
+    </p>
+  </section>
+
+  <section class="container">
+    <h3>Our Objectives</h3>
+    <ul>
+      <li>AI-based accident hotspot prediction</li>
+      <li>Integrated police and emergency response</li>
+      <li>Trauma care networks</li>
+      <li>GIS-based mapping and decision making</li>
+      <li>Road safety programs in schools and colleges</li>
+      <li>Public reporting of hazards and unsafe roads</li>
+    </ul>
+  </section>
+
+  <section class="container" id="weather-section">
+    <h3>Live Weather and Air Quality (Dibrugarh)</h3>
+    <p id="weather">Loading weather...</p>
+    <p id="aqi">Loading air quality...</p>
+  </section>
+
+  <section class="container" id="notice-section">
+    <h3>Latest Announcements / Public Notices</h3>
+    <marquee behavior="scroll" direction="left" style="font-weight: bold; padding: 10px 0;">
+      [Notice]: Accident Alert Near Railway Station |
+      [Notice]: Traffic Diversion Chowkidingee to AMC |
+      [Campaign]: Awareness Drive Helmet Safety Campaign starts tomorrow |
+      [Info]: Govt Notice Road repair near Boiragimoth ongoing
+    </marquee>
+  </section>
+
+  <!-- Features -->
+  <div class="features container">
+    <div class="feature">
+      <h3><i class="fas fa-map-marked-alt"></i> Dibrugarh Grid Mapping</h3>
+      <p>Divided zones for efficient safety operations.</p>
+    </div>
+    <div class="feature">
+      <h3><i class="fas fa-ambulance"></i> Emergency Support</h3>
+      <p>Real-time ambulance data tracking.</p>
+    </div>
+    <div class="feature">
+      <h3><i class="fas fa-chart-bar"></i> Accident Trend Insights</h3>
+      <p>Trends and predictions for 2026–2028.</p>
+    </div>
+    <div class="feature">
+      <h3><i class="fas fa-upload"></i> Data Management</h3>
+      <p>Admin panel for data update.</p>
+    </div>
+    <div class="feature">
+      <h3><i class="fas fa-bullhorn"></i> Public Awareness</h3>
+      <p>Community outreach programs with police & NGOs.</p>
+    </div>
+    <div class="feature">
+      <h3><i class="fas fa-robot"></i> Risk Prediction</h3>
+      <p>ML-based risk mapping forecasting.</p>
+    </div>
+  </div>
+
+  <section class="container">
+    <h3>Top 5 Critical Grid Locations Overview</h3>
+    <div id="heatmap"></div>
+    <br/>
+    <ul>
+      <li><a href="https://www.google.com/maps?q=27.4727,94.9120" target="_blank">Grid A1 – Near Dibrugarh Railway Station</a></li>
+      <li><a href="https://www.google.com/maps?q=27.4811,94.8998" target="_blank">Grid B2 – Mancotta Road Junction</a></li>
+      <li><a href="https://www.google.com/maps?q=27.4933,94.9052" target="_blank">Grid C3 – AMC Entrance</a></li>
+      <li><a href="https://www.google.com/maps?q=27.4784,94.9149" target="_blank">Grid D4 – Chowkidingee</a></li>
+      <li><a href="https://www.google.com/maps?q=27.4667,94.8971" target="_blank">Grid E5 – Boiragimoth Bypass</a></li>
+    </ul>
+  </section>
+
+  <!-- Feedback -->
+  <section class="container" id="feedback-form">
+    <h3>Public Feedback & Reporting</h3>
+    <form method="POST" action="/submit_feedback">
+      <label for="name">Your Name:</label>
+      <input type="text" name="name" required />
+      
+      <label for="email">Email (optional):</label>
+      <input type="email" name="email" />
+      
+      <label for="message">Message / Incident Report:</label>
+      <textarea name="message" rows="5" required></textarea>
+      
+      <br/>
+      <button type="submit">Submit Feedback</button>
+    </form>
+  </section>
+
+  <footer>
+     <p>&copy; 2025 Government of Assam – Dibrugarh Transport Department. All Rights Reserved.</p>
+  </footer>
+
+  <!-- JavaScript -->
+  <script>
+    // Carousel Logic
+    let current = 0;
+    const images = document.querySelectorAll('.carousel img');
+    if(images.length > 0) {
+        setInterval(() => {
+          images[current].classList.remove('active');
+          current = (current + 1) % images.length;
+          images[current].classList.add('active');
+        }, 4000);
+    }
+
+    // Weather API (unchanged but emoji-free)
+    async function loadWeatherAQI() {
+      const apiKey = '3ba87914cc86b857184893e28fe90adf';
+      const city = 'Dibrugarh';
+      try {
+        const weatherRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric`);
+        const weatherData = await weatherRes.json();
+        document.getElementById('weather').innerText = `Temperature: ${weatherData.main.temp}°C | ${weatherData.weather[0].description}`;
+        const { lat, lon } = weatherData.coord;
+        const aqiRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${apiKey}`);
+        const aqiData = await aqiRes.json();
+        const aqi = aqiData.list[0].main.aqi;
+        const aqiStatus = ['Good', 'Fair', 'Moderate', 'Poor', 'Very Poor'];
+        document.getElementById('aqi').innerText = `Air Quality Index: ${aqi} (${aqiStatus[aqi - 1]})`;
+      } catch {
+        document.getElementById('weather').innerText = 'Failed to load weather data.';
+        document.getElementById('aqi').innerText = 'Failed to load air quality data.';
+      }
+    }
+    loadWeatherAQI();
+
+    // Map initialization
+    const map = L.map('heatmap').setView([27.4727, 94.9120], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    const heat = L.heatLayer([
+      [27.4727, 94.9120, 100],
+      [27.4811, 94.8998, 80],
+      [27.4933, 94.9052, 60],
+      [27.4784, 94.9149, 90],
+      [27.4667, 94.8971, 70]
+    ], { radius: 25 }).addTo(map);
+
+    // Chatbot Logic
+    function toggleChat() {
+        const chat = document.getElementById('chatWindow');
+        chat.style.display = chat.style.display === 'flex' ? 'none' : 'flex';
+    }
+
+    function handleChatKey(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('chatInput');
+        const message = input.value.trim();
+        if (!message) return;
+
+        const chatBody = document.getElementById('chatBody');
+        chatBody.innerHTML += `<div class="chat-msg user">${message}</div>`;
+        input.value = '';
+        chatBody.scrollTop = chatBody.scrollHeight;
+
+        try {
+            const res = await fetch('/api/chatbot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+            const data = await res.json();
+            chatBody.innerHTML += `<div class="chat-msg bot">${data.response}</div>`;
+            chatBody.scrollTop = chatBody.scrollHeight;
+        } catch (err) {
+            chatBody.innerHTML += `<div class="chat-msg bot">Sorry, I'm offline right now.</div>`;
+        }
+    }
+  </script>
+
+  <!-- Floating Chatbot UI -->
+  <button class="chat-btn" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></button>
+
+  <div class="chat-window" id="chatWindow">
+      <div class="chat-header">
+          <span><i class="fas fa-robot"></i> Road Safety AI</span>
+          <button onclick="toggleChat()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="chat-body" id="chatBody">
+          <div class="chat-msg bot">Hello! I am your Road Safety Assistant. Ask me about emergency contacts, safety rules, or reporting an accident.</div>
+      </div>
+      <div class="chat-input">
+          <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="handleChatKey(event)">
+          <button onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+      </div>
+  </div>
+</body>
+</html>

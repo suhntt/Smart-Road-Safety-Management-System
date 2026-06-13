@@ -1,0 +1,424 @@
+/* Global Styling */
+:root {
+    --bg-color: #f4f7f9;
+    --text-color: #2c3e50;
+    --card-bg: #ffffff;
+    --primary-color: #003366;
+    --secondary-color: #0056b3;
+    --header-bg: #002244;
+    --header-text: #ffffff;
+    --border-color: #cccccc;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --feature-bg: #f0f4ff;
+    --input-border: #bbb;
+    --flash-bg: #fdecea;
+    --flash-text: #b30000;
+}
+
+[data-theme="dark"] {
+    --bg-color: #121212;
+    --text-color: #e0e0e0;
+    --card-bg: #1e1e1e;
+    --primary-color: #66b3ff;
+    --secondary-color: #99ccff;
+    --header-bg: #0d1117;
+    --header-text: #e0e0e0;
+    --border-color: #333333;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --feature-bg: #2d2d2d;
+    --input-border: #555;
+    --flash-bg: #4a1c1c;
+    --flash-text: #ff9999;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    margin: 0;
+    padding: 0;
+    color: var(--text-color);
+    line-height: 1.6;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+a {
+    text-decoration: none;
+    color: var(--secondary-color);
+}
+
+a.btn, button, .btn {
+    padding: 10px 18px;
+    background-color: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-decoration: none;
+}
+
+a.btn:hover, button:hover, .btn:hover {
+    opacity: 0.9;
+}
+
+/* Header */
+.gov-header, header {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    flex-wrap: wrap;
+}
+
+.gov-header .logo, header .logo {
+    display: flex;
+    align-items: center;
+}
+
+.gov-header .logo img {
+    width: 60px;
+    margin-right: 15px;
+}
+
+.gov-header h1, header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: var(--header-text);
+}
+
+.gov-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.85;
+}
+
+.theme-toggle {
+    background: transparent;
+    border: 1px solid var(--header-text);
+    color: var(--header-text);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 15px;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* Hero Section */
+.hero {
+    padding: 80px 30px 30px;
+    text-align: center;
+    background: var(--card-bg);
+    animation: fadeIn 1s ease;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.hero h2 {
+    font-size: 32px;
+    margin-bottom: 10px;
+    color: var(--primary-color);
+}
+
+.hero p {
+    font-size: 18px;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Carousel */
+.carousel {
+    max-width: 100%;
+    height: 360px;
+    overflow: hidden;
+    position: relative;
+    margin-top: 10px;
+}
+
+.carousel img {
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+    position: absolute;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+}
+
+.carousel img.active {
+    opacity: 1;
+    z-index: 1;
+}
+
+/* Containers / Sections */
+section, .container, .auth-form, .login-box, .signup-box {
+    background-color: var(--card-bg);
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    margin: 20px auto;
+    max-width: 1100px;
+}
+
+.auth-form, .login-box, .signup-box {
+    max-width: 420px;
+    margin: 60px auto;
+}
+
+section h2, .container h2, section h3 {
+    color: var(--primary-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+    margin-top: 20px;
+}
+
+/* Features Section */
+.features {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 20px;
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+}
+
+.feature {
+    flex: 1 1 30%;
+    background-color: var(--feature-bg);
+    border-left: 5px solid var(--primary-color);
+    padding: 20px;
+    border-radius: 4px;
+    transition: transform 0.3s ease;
+    min-height: 150px;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+}
+
+.feature h3 {
+    border-bottom: none;
+    margin-top: 0;
+}
+
+/* Forms */
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin: 15px 0 5px;
+    font-weight: bold;
+    color: var(--text-color);
+}
+
+input, select, textarea {
+    padding: 10px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    font-size: 16px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+/* Messages */
+.flash-messages p, .flash {
+    background-color: var(--flash-bg);
+    color: var(--flash-text);
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 15px;
+    font-weight: bold;
+}
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    text-align: left;
+}
+
+th {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+}
+
+/* Footer */
+footer {
+    background-color: var(--header-bg);
+    color: var(--header-text);
+    text-align: center;
+    padding: 15px 10px;
+    font-size: 14px;
+    margin-top: 30px;
+}
+
+/* Canvas / Map */
+canvas {
+    max-width: 100%;
+    margin: 20px 0;
+    background: var(--card-bg);
+}
+
+#map {
+    height: 500px;
+    width: 100%;
+    margin-top: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    z-index: 1; /* Keep leaflet controls clean */
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .features {
+        flex-direction: column;
+    }
+    .gov-header, header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .carousel {
+        height: 220px;
+    }
+    .carousel img {
+        height: 220px;
+    }
+}
+
+/* Floating Chatbot */
+.chat-btn {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--shadow-color);
+    z-index: 1000;
+    transition: transform 0.3s ease;
+}
+
+.chat-btn:hover {
+    transform: scale(1.1);
+}
+
+.chat-window {
+    position: fixed;
+    bottom: 100px;
+    right: 30px;
+    width: 350px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px var(--shadow-color);
+    z-index: 1000;
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.chat-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 15px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chat-header button {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+}
+
+.chat-body {
+    padding: 15px;
+    height: 300px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    background: var(--bg-color);
+}
+
+.chat-msg {
+    padding: 10px 15px;
+    border-radius: 18px;
+    max-width: 80%;
+    word-wrap: break-word;
+    font-size: 14px;
+}
+
+.chat-msg.user {
+    background: var(--primary-color);
+    color: white;
+    align-self: flex-end;
+    border-bottom-right-radius: 4px;
+}
+
+.chat-msg.bot {
+    background: var(--card-bg);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    align-self: flex-start;
+    border-bottom-left-radius: 4px;
+}
+
+.chat-input {
+    display: flex;
+    padding: 10px;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+}
+
+.chat-input input {
+    flex: 1;
+    border: none;
+    padding: 8px;
+    outline: none;
+    background: transparent;
+    color: var(--text-color);
+}
+
+.chat-input button {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 8px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+}

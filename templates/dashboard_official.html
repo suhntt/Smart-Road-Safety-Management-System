@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+  <meta charset="UTF-8">
+  <title>Road Safety Insights - Dibrugarh</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <script>
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.setAttribute('data-theme', 'dark');
+        }
+    }
+    initTheme();
+
+    function toggleTheme() {
+        const currentTheme = document.body.getAttribute('data-theme');
+        if (currentTheme === 'dark') {
+            document.body.removeAttribute('data-theme');
+            localStorage.setItem('theme', 'light');
+        } else {
+            document.body.setAttribute('data-theme', 'dark');
+            localStorage.setItem('theme', 'dark');
+        }
+        // Reload charts to apply theme colors if necessary, simple reload works
+        window.location.reload();
+    }
+  </script>
+</head>
+
+<body>
+  <header class="gov-header">
+    <h1>Dibrugarh Road Safety Dashboard (2022–2025)</h1>
+    <div>
+        <button class="theme-toggle" onclick="toggleTheme()">Toggle Theme</button>
+        <button class="btn" style="margin-left: 10px; background-color: #28a745;" onclick="exportPDF()">Export PDF Report</button>
+        <a href="{{ url_for('auth.logout') }}" style="color: var(--header-text); margin-left: 20px;">Logout</a>
+    </div>
+  </header>
+
+  <div id="dashboard-content">
+      <section class="container">
+
+        <div class="card" style="display: flex; align-items: center; justify-content: space-between; padding: 20px; background: linear-gradient(135deg, var(--primary-color), #34495E); color: white; margin-bottom: 30px; border-radius: 12px; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h3 style="margin: 0; color: white;"><i class="fas fa-bolt"></i> Live ML Risk Monitor</h3>
+                <p style="margin: 5px 0 0 0; font-size: 16px;">Current Weather: <strong>{{ weather_risk.condition }} ({{ weather_risk.temp }}°C)</strong></p>
+            </div>
+            <div style="text-align: right; background: rgba(0,0,0,0.2); padding: 10px 20px; border-radius: 8px;">
+                <p style="margin: 0; font-size: 14px; opacity: 0.9;">Weather-Adjusted Risk Level</p>
+                <h2 style="margin: 5px 0 0 0; color: {% if weather_risk.multiplier > 1.2 %}#ff6b6b{% else %}#51cf66{% endif %}; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+                    {{ weather_risk.risk_level }}
+                </h2>
+            </div>
+        </div>
+
+        <h2>1. Total Accidents Per Year</h2>
+        <canvas id="barChart"></canvas>
+
+        <h2>2. Year-on-Year Percentage Change</h2>
+        <canvas id="percentChart"></canvas>
+
+        <h2>3. Highest and Lowest Accident Year</h2>
+        <p>Highest: <strong>{{ highest_year }}</strong> ({{ highest_value }} accidents)</p>
+        <p>Lowest: <strong>{{ lowest_year }}</strong> ({{ lowest_value }} accidents)</p>
+
+        <h2>4. Accident-Prone Grids Overview</h2>
+        <canvas id="topGridsChart"></canvas>
+
+        <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 4px; margin-top: 20px;">
+        <table style="margin-top: 0;">
+          <thead style="position: sticky; top: 0; z-index: 1;">
+            <tr>
+              <th>Grid ID</th>
+              <th>Total Accidents</th>
+              <th>View on Map</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for grid in map_points %}
+            <tr>
+              <td>{{ grid.grid_id }}</td>
+              <td>{{ grid.total }}</td>
+              <td>
+                <a href="https://www.google.com/maps?q={{ grid.lat }},{{ grid.lng }}&z=17" target="_blank">View</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        </div>
+
+        <h2>5. Grid-wise Accident Trend</h2>
+        <canvas id="gridTrendChart"></canvas>
+
+        <h2>6. Forecast for 2026–2028 (Random Forest ML)</h2>
+        <canvas id="forecastChart"></canvas>
+
+        <h2>7. Map Plotting & Heatmap of Accidents</h2>
+        <div id="map"></div>
+
+        <h2>8. Summary Insights</h2>
+        <ul>
+          {% for point in summary_points %}
+            <li>{{ point }}</li>
+          {% endfor %}
+        </ul>
+        
+        <div data-html2canvas-ignore style="margin-top: 40px; padding: 25px; background-color: var(--feature-bg); border-radius: 8px; border-left: 5px solid var(--primary-color);">
+            <h2 style="margin-top: 0; border: none;">9. Add New Accident-Prone Area</h2>
+            <form method="POST" style="display: flex; flex-direction: column; gap: 15px; max-width: 400px;">
+                <div>
+                    <label for="grid_id" style="display: block; margin-bottom: 5px;">Grid ID</label>
+                    <input type="text" name="grid_id" required style="width: 100%; box-sizing: border-box;" placeholder="e.g. 789123">
+                </div>
+                <div>
+                    <label for="latitude" style="display: block; margin-bottom: 5px;">Latitude</label>
+                    <input type="text" name="latitude" required style="width: 100%; box-sizing: border-box;" placeholder="e.g. 27.4728">
+                </div>
+                <div>
+                    <label for="longitude" style="display: block; margin-bottom: 5px;">Longitude</label>
+                    <input type="text" name="longitude" required style="width: 100%; box-sizing: border-box;" placeholder="e.g. 94.9120">
+                </div>
+                <button type="submit" class="btn" style="width: 100%; margin-top: 10px;">Submit Location</button>
+            </form>
+        </div>
+      </section>
+      
+      <footer>
+        <p>&copy; 2025 Government of Assam – Dibrugarh Transport Department. All Rights Reserved.</p>
+      </footer>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <script>
+    // Configure Chart.js global defaults for Dark Mode
+    const isDark = document.body.getAttribute('data-theme') === 'dark';
+    Chart.defaults.color = isDark ? '#e0e0e0' : '#2c3e50';
+    Chart.defaults.scale.grid.color = isDark ? '#333333' : '#e0e0e0';
+
+    function exportPDF() {
+      const element = document.getElementById('dashboard-content');
+      html2pdf()
+        .set({
+          margin: [10, 10, 10, 10],
+          filename: 'Dibrugarh_Road_Safety_Report.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2, useCORS: true },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        })
+        .from(element)
+        .save();
+    }
+
+    function initMap() {
+      const centerCoords = [27.4728, 94.9120];
+      const map = L.map('map').setView(centerCoords, 10);
+
+      const tileUrl = isDark 
+        ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+
+      L.tileLayer(tileUrl, {
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      const locations = {{ map_points | tojson }};
+      const heatData = [];
+      
+      locations.forEach(loc => {
+        L.marker([loc.lat, loc.lng])
+          .addTo(map)
+          .bindPopup(`<b>Grid ID:</b> ${loc.grid_id}<br><b>Total Accidents:</b> ${loc.total}`);
+          
+        heatData.push([loc.lat, loc.lng, loc.total * 5]); 
+      });
+
+      L.heatLayer(heatData, { radius: 25, blur: 15, maxZoom: 17 }).addTo(map);
+    }
+
+    window.onload = function() {
+        initMap();
+
+        new Chart(document.getElementById('barChart'), {
+          type: 'bar',
+          data: {
+            labels: {{ years | tojson }},
+            datasets: [{
+              label: 'Total Accidents',
+              data: {{ total_per_year | tojson }},
+              backgroundColor: '#ff6666'
+            }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById('percentChart'), {
+          type: 'line',
+          data: {
+            labels: {{ years | tojson }},
+            datasets: [{
+              label: 'YoY % Change',
+              data: {{ percent_change | tojson }},
+              borderColor: '#3366cc',
+              fill: false
+            }]
+          },
+          options: { responsive: true }
+        });
+
+        new Chart(document.getElementById('topGridsChart'), {
+          type: 'bar',
+          data: {
+            labels: {{ top_grids_labels | tojson }},
+            datasets: [{
+              label: 'Accidents',
+              data: {{ top_grids_values | tojson }},
+              backgroundColor: '#ffa500'
+            }]
+          },
+          options: { responsive: true }
+        });
+
+        new Chart(document.getElementById('gridTrendChart'), {
+          type: 'line',
+          data: {
+            labels: {{ years | tojson }},
+            datasets: [
+              {% for grid in grid_trends %}
+              {
+                label: '{{ grid.grid_id }}',
+                data: {{ grid.data | tojson }},
+                borderColor: '{{ grid.color }}',
+                fill: false
+              },
+              {% endfor %}
+            ]
+          },
+          options: { responsive: true }
+        });
+
+        new Chart(document.getElementById('forecastChart'), {
+          type: 'line',
+          data: {
+            labels: {{ forecast_years | tojson }},
+            datasets: [{
+              label: 'Forecasted Accidents',
+              data: {{ forecast_values | tojson }},
+              borderColor: '#009933',
+              fill: false
+            }]
+          },
+          options: { responsive: true }
+        });
+    };
+  </script>
+</body>
+</html>
